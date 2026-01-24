@@ -1,0 +1,680 @@
+openapi: 3.0.3
+info:
+  title: Gin Template API
+  description: A simple Go + Gin server template with basic endpoints
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the server health status
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  message:
+                    type: string
+                    example: "Server is healthy"
+
+  /hello:
+    get:
+      summary: Hello World endpoint
+      description: Returns a greeting message
+      tags:
+        - Greeting
+      parameters:
+        - name: name
+          in: query
+          description: Name to greet
+          required: false
+          schema:
+            type: string
+            default: "World"
+            example: "John"
+      responses:
+        '200':
+          description: Greeting message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Hello John!"
+  /auth/bootstrap:
+    post:
+      summary: Bootstrap auth
+      description: Verifies Firebase ID token and creates a user when missing
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+
+  /admin/me:
+    get:
+      summary: Get current admin user
+      description: Returns the authenticated user with host role
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+
+  /me:
+    get:
+      summary: Get current user
+      description: Returns the authenticated user with host or friend role
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+
+  /reservations:
+    get:
+      summary: List reservations by date range
+      description: Returns reservations that overlap the specified date range
+      tags:
+        - Reservations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          description: Start date (YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          description: End date (YYYY-MM-DD)
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Reservation list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid date range
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+    post:
+      summary: Create reservation
+      description: Creates a reservation after availability check
+      tags:
+        - Reservations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationCreateRequest'
+      responses:
+        '201':
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Availability not ok or invalid body
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Failed to create
+
+  /reservations/{id}/status:
+    patch:
+      summary: Update reservation status
+      description: Updates reservation status (host only)
+      tags:
+        - Reservations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationStatusUpdateRequest'
+      responses:
+        '200':
+          description: Reservation updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Availability not ok or invalid body
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Failed to update
+
+  /admin/pre-reservations:
+    get:
+      summary: List pending pre-reservations
+      description: Returns reservations with pending status
+      tags:
+        - Reservations
+        - Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Pending reservation list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /admin/pre-reservations/{id}:
+    patch:
+      summary: Approve or reject pre-reservation
+      description: Updates pre-reservation status (host only)
+      tags:
+        - Reservations
+        - Admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreReservationActionRequest'
+      responses:
+        '200':
+          description: Reservation updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid action or availability not ok
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Failed to update
+
+  /tasks:
+    get:
+      summary: List task instances by date
+      description: Returns task instances for the specified date
+      tags:
+        - Tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date
+          in: query
+          description: Target date (YYYY-MM-DD). Defaults to today.
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Task instances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskInstance'
+        '400':
+          description: Invalid date
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /tasks/{id}:
+    patch:
+      summary: Update task status
+      description: Updates a task instance status (host only)
+      tags:
+        - Tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdateRequest'
+      responses:
+        '200':
+          description: Task instance updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskInstance'
+        '400':
+          description: Invalid status or transition
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Failed to update
+
+  /public/info:
+    get:
+      summary: Get public info
+      description: Returns public listing information without authentication
+      tags:
+        - Public
+      responses:
+        '200':
+          description: Public information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicInfo'
+
+  /availability:
+    get:
+      summary: Check availability
+      description: Returns availability for the requested date range
+      tags:
+        - Availability
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: checkin_at
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: checkout_at
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Availability result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityResponse'
+        '400':
+          description: Invalid parameters
+
+  /friend/pre-reservations:
+    post:
+      summary: Create friend pre-reservation
+      description: Creates a pending reservation for friends after availability check
+      tags:
+        - Reservations
+        - Friend
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendPreReservationRequest'
+      responses:
+        '201':
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Availability not ok or invalid body
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Failed to create
+
+  /friend/reservations:
+    get:
+      summary: List friend reservations
+      description: Returns reservations created by the authenticated friend
+      tags:
+        - Reservations
+        - Friend
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Friend reservation list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendReservationResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+
+    GreetingResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        firebase_uid:
+          type: string
+        role:
+          type: string
+          example: friend
+        name:
+          type: string
+        email:
+          type: string
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+        source:
+          type: string
+          example: manual
+        status:
+          type: string
+          example: pending
+        checkin_at:
+          type: string
+          format: date-time
+        checkout_at:
+          type: string
+          format: date-time
+        guests_count:
+          type: integer
+          example: 2
+        guest_name:
+          type: string
+        guest_contact:
+          type: string
+        note:
+          type: string
+        created_by_user_id:
+          type: string
+
+    ReservationCreateRequest:
+      type: object
+      required:
+        - source
+        - checkin_at
+        - checkout_at
+        - guests_count
+      properties:
+        source:
+          type: string
+          description: manual or friend
+        checkin_at:
+          type: string
+          format: date-time
+        checkout_at:
+          type: string
+          format: date-time
+        guests_count:
+          type: integer
+        guest_name:
+          type: string
+        guest_contact:
+          type: string
+        note:
+          type: string
+
+    ReservationStatusUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: confirmed, rejected, or cancelled
+
+    PreReservationActionRequest:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          description: approve or reject
+
+    TaskInstance:
+      type: object
+      properties:
+        id:
+          type: string
+        maintenance_task_id:
+          type: string
+        target_date:
+          type: string
+          format: date
+        reservation_id:
+          type: string
+        status:
+          type: string
+          example: todo
+        assigned_to_user_id:
+          type: string
+        completed_at:
+          type: string
+          format: date-time
+        memo:
+          type: string
+
+    TaskUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: done or skipped
+        memo:
+          type: string
+
+    PublicInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        access:
+          type: string
+        house_rules:
+          type: array
+          items:
+            type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        checkin_time:
+          type: string
+        checkout_time:
+          type: string
+        notes:
+          type: string
+
+    AvailabilityResponse:
+      type: object
+      properties:
+        available:
+          type: boolean
+        reason:
+          type: string
+
+    FriendPreReservationRequest:
+      type: object
+      required:
+        - checkin_at
+        - checkout_at
+        - guests_count
+      properties:
+        checkin_at:
+          type: string
+          format: date-time
+        checkout_at:
+          type: string
+          format: date-time
+        guests_count:
+          type: integer
+        guest_name:
+          type: string
+        guest_contact:
+          type: string
+        note:
+          type: string
+
+    FriendReservationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        checkin_at:
+          type: string
+          format: date-time
+        checkout_at:
+          type: string
+          format: date-time
+        guests_count:
+          type: integer
+        guest_name:
+          type: string
+        note:
+          type: string
