@@ -1,15 +1,160 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = env("PRISMA_DATABASE_URL")
+}
+
+enum UserRole {
+  public
+  friend
+  host
+}
+
+enum ScheduleStatus {
+  open
+  closed
+  blocked
+}
+
+enum ReservationSource {
+  airbnb
+  booking
+  manual
+  friend
+}
+
+enum ReservationStatus {
+  pending
+  confirmed
+  cancelled
+  rejected
+}
+
+enum MaintenanceFrequency {
+  per_stay
+  daily
+  weekly
+  monthly
+  custom
+}
+
+enum TaskStatus {
+  todo
+  done
+  skipped
+}
+
+enum NotificationChannel {
+  slack
+  line
+  email
+}
+
+enum NotificationStatus {
+  success
+  failure
+}
+
+model User {
+  id           String   @id @default(cuid())
+  firebase_uid String   @unique
+  role         UserRole
+  name         String
+  email        String
+  phone        String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  reservations   Reservation[]  @relation("ReservationCreatedBy")
+  assigned_tasks TaskInstance[] @relation("TaskInstanceAssignedTo")
+
+  @@map("users")
+}
+
+model Schedule {
+  id         String         @id @default(cuid())
+  date       DateTime       @db.Date
+  status     ScheduleStatus
+  note       String?
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+
+  @@map("schedules")
+}
+
+model Reservation {
+  id                      String            @id @default(cuid())
+  source                  ReservationSource
+  external_reservation_id String?
+  channel_url             String?
+  raw_payload_json        String?           @db.Text
+  status                  ReservationStatus
+  checkin_at              DateTime
+  checkout_at             DateTime
+  guests_count            Int
+  guest_name              String?
+  guest_contact           String?
+  note                    String?
+  created_by_user_id      String?
+  created_by_user         User?             @relation("ReservationCreatedBy", fields: [created_by_user_id], references: [id])
+  created_at              DateTime          @default(now())
+  updated_at              DateTime          @updatedAt
+
+  task_instances TaskInstance[]
+
+  @@index([created_by_user_id])
+  @@map("reservations")
+}
+
+model MaintenanceTask {
+  id               String               @id @default(cuid())
+  title            String
+  description      String
+  frequency        MaintenanceFrequency
+  due_offset_hours Int
+  is_active        Boolean
+  created_at       DateTime             @default(now())
+  updated_at       DateTime             @updatedAt
+
+  task_instances TaskInstance[]
+
+  @@map("maintenance_tasks")
+}
+
+model TaskInstance {
+  id                  String          @id @default(cuid())
+  maintenance_task_id String
+  maintenance_task    MaintenanceTask @relation(fields: [maintenance_task_id], references: [id])
+  target_date         DateTime        @db.Date
+  reservation_id      String?
+  reservation         Reservation?    @relation(fields: [reservation_id], references: [id])
+  status              TaskStatus
+  assigned_to_user_id String?
+  assigned_to_user    User?           @relation("TaskInstanceAssignedTo", fields: [assigned_to_user_id], references: [id])
+  completed_at        DateTime?
+  memo                String
+  created_at          DateTime        @default(now())
+  updated_at          DateTime        @updatedAt
+
+  @@index([maintenance_task_id])
+  @@index([reservation_id])
+  @@index([assigned_to_user_id])
+  @@map("task_instances")
+}
+
+model NotificationLog {
+  id            String              @id @default(cuid())
+  channel       NotificationChannel
+  destination   String
+  event_type    String
+  payload_json  String
+  status        NotificationStatus
+  error_message String?
+  sent_at       DateTime
+  created_at    DateTime            @default(now())
+
+  @@map("notification_logs")
 }
