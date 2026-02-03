@@ -17,3 +17,8 @@ export type PublicInfo = {
   checkout_time?: string;
   notes?: string;
 };
+
+export type AvailabilityResponse = {
+  available?: boolean;
+  reason?: string;
+};
