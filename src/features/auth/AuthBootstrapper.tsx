@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -9,9 +9,11 @@ import { bootstrapAuth, fetchMe } from '@/lib/api/auth';
 export const AuthBootstrapper = () => {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const lastUidRef = useRef<string | null>(null);
   const bootstrappedRef = useRef(false);
   const inFlightRef = useRef(false);
+  const hadUserRef = useRef(false);
 
   useEffect(() => {
     if (loading) {
@@ -22,6 +24,7 @@ export const AuthBootstrapper = () => {
       lastUidRef.current = null;
       bootstrappedRef.current = false;
       inFlightRef.current = false;
+      hadUserRef.current = false;
       return;
     }
 
@@ -35,6 +38,8 @@ export const AuthBootstrapper = () => {
 
     inFlightRef.current = true;
     lastUidRef.current = user.uid;
+    const justLoggedIn = !hadUserRef.current;
+    hadUserRef.current = true;
 
     const runBootstrap = async () => {
       try {
@@ -45,17 +50,27 @@ export const AuthBootstrapper = () => {
         bootstrappedRef.current = true;
 
         if (me.role === 'friend') {
-          router.replace('/availability');
+          if (justLoggedIn) {
+            const isFriendRoute = pathname === '/availability' || pathname.startsWith('/reservations');
+            if (!isFriendRoute) {
+              router.replace('/availability');
+            }
+          }
           return;
         }
 
         if (me.role === 'host') {
-          router.replace('/pre-reservations');
+          if (justLoggedIn) {
+            const isHostRoute = pathname === '/pre-reservations';
+            if (!isHostRoute) {
+              router.replace('/pre-reservations');
+            }
+          }
           return;
         }
 
         throw new Error(`Unknown role: ${me.role ?? 'missing'}`);
-      } catch (error) {
+      } catch (_error) {
         bootstrappedRef.current = false;
         await logout();
       } finally {
@@ -64,7 +79,7 @@ export const AuthBootstrapper = () => {
     };
 
     void runBootstrap();
-  }, [loading, logout, router, user]);
+  }, [loading, logout, router, user, pathname]);
 
   return null;
 };
