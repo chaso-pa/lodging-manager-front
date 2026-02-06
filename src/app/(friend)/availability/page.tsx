@@ -53,7 +53,6 @@ export default function AvailabilityPage() {
       setError(null);
 
       try {
-        console.log(checkin);
         const token = await user.getIdToken();
         const result = await fetchAvailability(
           {

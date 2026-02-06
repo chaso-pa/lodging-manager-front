@@ -38,7 +38,8 @@ export const AuthBootstrapper = () => {
 
     inFlightRef.current = true;
     lastUidRef.current = user.uid;
-    const justLoggedIn = !hadUserRef.current;
+    const justLoggedIn = !hadUserRef.current || lastUidRef.current !== user.uid;
+
     hadUserRef.current = true;
 
     const runBootstrap = async () => {
