@@ -1,14 +1,12 @@
 'use client';
 
 import { Card, Text } from '@mantine/core';
-import { DatePicker } from '@mantine/dates';
+import { DatePicker, type DatesRangeValue } from '@mantine/dates';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { fetchAvailability } from '@/lib/api/availability';
 import type { AvailabilityResponse } from '@/lib/api/types';
-
-type RangeValue = [Date | null, Date | null];
 
 const formatDateTime = (value: Date | string) => {
   if (value instanceof Date) {
@@ -27,7 +25,7 @@ const formatDateTime = (value: Date | string) => {
 
 export default function AvailabilityPage() {
   const { user, loading } = useAuth();
-  const [range, setRange] = useState<RangeValue>([null, null]);
+  const [range, setRange] = useState<DatesRangeValue>([null, null]);
   const [status, setStatus] = useState<AvailabilityResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
@@ -55,7 +53,6 @@ export default function AvailabilityPage() {
       setError(null);
 
       try {
-        console.log(checkin);
         const token = await user.getIdToken();
         const result = await fetchAvailability(
           {

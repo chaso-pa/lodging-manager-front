@@ -22,3 +22,16 @@ export type AvailabilityResponse = {
   available?: boolean;
   reason?: string;
 };
+
+export type Reservation = {
+  id?: string;
+  source?: string;
+  status?: string;
+  checkin_at?: string;
+  checkout_at?: string;
+  guests_count?: number;
+  guest_name?: string;
+  guest_contact?: string;
+  note?: string;
+  created_by_user_id?: string;
+};
