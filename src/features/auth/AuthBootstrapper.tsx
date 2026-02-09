@@ -13,18 +13,26 @@ export const AuthBootstrapper = () => {
   const lastUidRef = useRef<string | null>(null);
   const bootstrappedRef = useRef(false);
   const inFlightRef = useRef(false);
-  const hadUserRef = useRef(false);
+  const authStateRef = useRef<{ initialized: boolean; previousUid: string | null }>({
+    initialized: false,
+    previousUid: null
+  });
 
   useEffect(() => {
     if (loading) {
       return;
     }
 
+    if (!authStateRef.current.initialized) {
+      authStateRef.current.initialized = true;
+      authStateRef.current.previousUid = user?.uid ?? null;
+    }
+
     if (!user) {
       lastUidRef.current = null;
       bootstrappedRef.current = false;
       inFlightRef.current = false;
-      hadUserRef.current = false;
+      authStateRef.current.previousUid = null;
       return;
     }
 
@@ -38,9 +46,8 @@ export const AuthBootstrapper = () => {
 
     inFlightRef.current = true;
     lastUidRef.current = user.uid;
-    const justLoggedIn = !hadUserRef.current || lastUidRef.current !== user.uid;
-
-    hadUserRef.current = true;
+    const justLoggedIn = authStateRef.current.previousUid === null && authStateRef.current.initialized;
+    authStateRef.current.previousUid = user.uid;
 
     const runBootstrap = async () => {
       try {
