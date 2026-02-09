@@ -1,13 +1,11 @@
 'use client';
 
 import { Button, Card, NumberInput, Text, Textarea } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import { DatePickerInput, type DatesRangeValue } from '@mantine/dates';
 import { useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { createFriendPreReservation } from '@/lib/api/preReservations';
-
-type RangeValue = [Date | null, Date | null];
 
 const formatDateTime = (value: Date | string) => {
   if (value instanceof Date) {
@@ -26,8 +24,8 @@ const formatDateTime = (value: Date | string) => {
 
 export default function FriendPreReservationPage() {
   const { user, loading } = useAuth();
-  const [range, setRange] = useState<RangeValue>([null, null]);
-  const [guestsCount, setGuestsCount] = useState<number | ''>('');
+  const [range, setRange] = useState<DatesRangeValue>([null, null]);
+  const [guestsCount, setGuestsCount] = useState<string | number>('');
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
