@@ -6,6 +6,7 @@ import '@mantine/dates/styles.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
 import { AuthBootstrapper } from '@/features/auth/AuthBootstrapper';
+import { AppHeader } from '@/components/layout/AppHeader';
 
 export const metadata: Metadata = {
   title: 'My Mantine app',
@@ -20,7 +21,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthBootstrapper />
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider>
+          <AppHeader />
+          {children}
+        </MantineProvider>
       </body>
     </html>
   );
