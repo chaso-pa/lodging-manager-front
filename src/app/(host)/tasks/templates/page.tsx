@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Skeleton, Stack, Text } from '@mantine/core';
+import { Button, Card, Group, Skeleton, Stack, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useRef, useState } from 'react';
 
@@ -52,9 +52,14 @@ export default function TaskTemplatesPage() {
     <main style={{ padding: '2rem' }}>
       <Card withBorder radius='md' padding='lg' style={{ maxWidth: 960, margin: '0 auto' }}>
         <Stack gap='md'>
-          <Text fw={700} size='lg'>
-            Task Templates
-          </Text>
+          <Group gap={'xs'}>
+            <Text fw={700} size='lg'>
+              Task Templates
+            </Text>
+            <Button component='a' size='sm' href='/tasks/templates/new'>
+              New
+            </Button>
+          </Group>
 
           {loading && <Text c='dimmed'>Checking login status...</Text>}
           {!loading && !user && <Text c='red'>Please log in to view task templates.</Text>}
