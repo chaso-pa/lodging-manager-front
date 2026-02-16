@@ -27,7 +27,6 @@ export const AppHeader = () => {
       try {
         const token = await user.getIdToken();
         const me = await fetchMe(token);
-        console.log(me);
 
         setRole(me.role ?? null);
       } catch {
@@ -48,9 +47,17 @@ export const AppHeader = () => {
           宿泊申請
         </Anchor>
         {role === 'host' && (
-          <Anchor component={Link} href='/pre-reservations'>
-            予約申請一覧
-          </Anchor>
+          <>
+            <Anchor component={Link} href='/pre-reservations'>
+              予約申請一覧
+            </Anchor>
+            <Anchor component={Link} href='/tasks/instances'>
+              タスク実行
+            </Anchor>
+            <Anchor component={Link} href='/tasks/templates'>
+              タスクテンプレ
+            </Anchor>
+          </>
         )}
         <Anchor component={Link} href='/login'>
           ログイン
