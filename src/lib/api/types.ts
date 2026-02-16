@@ -51,3 +51,12 @@ export type TaskUpdateRequest = {
   status: 'done' | 'skipped';
   memo?: string;
 };
+
+export type TaskTemplate = {
+  id?: string;
+  title?: string;
+  description?: string;
+  frequency?: 'per_stay' | 'daily' | 'weekly' | 'monthly' | 'custom' | string;
+  due_offset_hours?: number;
+  is_active?: boolean;
+};
