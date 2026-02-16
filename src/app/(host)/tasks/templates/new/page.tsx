@@ -23,8 +23,9 @@ export default function TaskTemplateCreatePage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [frequency, setFrequency] = useState<string | null>('per_stay');
-  const [dueOffsetHours, setDueOffsetHours] = useState<number | ''>('');
+  const [dueOffsetHours, setDueOffsetHours] = useState<number | string>(0);
   const [isActive, setIsActive] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const canSubmit =
     !loading &&
@@ -37,9 +38,11 @@ export default function TaskTemplateCreatePage() {
 
   const handleSubmit = async () => {
     if (!canSubmit || !frequency || typeof dueOffsetHours !== 'number') {
+      setError('必須項目を入力してください。');
       return;
     }
 
+    setError(null);
     createTaskTemplate.mutate(
       {
         title: title.trim(),
@@ -49,7 +52,8 @@ export default function TaskTemplateCreatePage() {
         is_active: isActive
       },
       {
-        onSuccess: () => router.replace('/tasks/templates')
+        onSuccess: () => router.replace('/tasks/templates'),
+        onError: () => setError('作成に失敗しました。内容をご確認ください。')
       }
     );
   };
@@ -75,6 +79,12 @@ export default function TaskTemplateCreatePage() {
           <Select label='Frequency' data={frequencyOptions} value={frequency} onChange={setFrequency} />
           <NumberInput label='Due offset (hours)' min={0} value={dueOffsetHours} onChange={setDueOffsetHours} />
           <Switch label='Active' checked={isActive} onChange={(event) => setIsActive(event.currentTarget.checked)} />
+
+          {error && (
+            <Text c='red' size='sm'>
+              {error}
+            </Text>
+          )}
 
           <Group justify='flex-end'>
             <Button variant='default' onClick={() => router.push('/tasks/templates')}>
