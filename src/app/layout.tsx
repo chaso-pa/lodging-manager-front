@@ -4,9 +4,10 @@ import type { Metadata } from 'next';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 
-import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
+import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import { AuthBootstrapper } from '@/features/auth/AuthBootstrapper';
 import { AppHeader } from '@/components/layout/AppHeader';
+import { Providers } from '@/app/providers';
 
 export const metadata: Metadata = {
   title: 'My Mantine app',
@@ -21,10 +22,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthBootstrapper />
-        <MantineProvider>
+        <Providers>
           <AppHeader />
           {children}
-        </MantineProvider>
+        </Providers>
       </body>
     </html>
   );
