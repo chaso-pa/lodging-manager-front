@@ -291,7 +291,7 @@ paths:
         '500':
           description: Failed to update
 
-  /tasks:
+  /admin/tasks:
     get:
       summary: List task instances by date
       description: Returns task instances for the specified date
@@ -323,7 +323,7 @@ paths:
         '403':
           description: Forbidden
 
-  /tasks/{id}:
+  /admin/tasks/{id}:
     patch:
       summary: Update task status
       description: Updates a task instance status (host only)
@@ -352,6 +352,132 @@ paths:
                 $ref: '#/components/schemas/TaskInstance'
         '400':
           description: Invalid status or transition
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Failed to update
+
+  /admin/maintenance-tasks:
+    get:
+      summary: List maintenance tasks
+      description: Returns all maintenance task templates
+      tags:
+        - MaintenanceTasks
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Maintenance task list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceTask'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    post:
+      summary: Create maintenance task
+      description: Creates a maintenance task template (host only)
+      tags:
+        - MaintenanceTasks
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceTaskCreateRequest'
+      responses:
+        '201':
+          description: Maintenance task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceTask'
+        '400':
+          description: Invalid body or frequency
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Failed to create
+
+  /admin/maintenance-tasks/{id}/active:
+    patch:
+      summary: Update maintenance task active flag
+      description: Updates maintenance task active status (host only)
+      tags:
+        - MaintenanceTasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceTaskActiveUpdateRequest'
+      responses:
+        '200':
+          description: Maintenance task updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceTask'
+        '400':
+          description: Invalid body
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Failed to update
+
+  /admin/maintenance-tasks/{id}:
+    patch:
+      summary: Update maintenance task template
+      description: Updates maintenance task fields (host only)
+      tags:
+        - MaintenanceTasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceTaskUpdateRequest'
+      responses:
+        '200':
+          description: Maintenance task updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceTask'
+        '400':
+          description: Invalid body or frequency
         '401':
           description: Unauthorized
         '403':
@@ -591,6 +717,85 @@ components:
           format: date-time
         memo:
           type: string
+
+    MaintenanceTask:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        frequency:
+          type: string
+          enum:
+            - per_stay
+            - daily
+            - weekly
+            - monthly
+            - custom
+        due_offset_hours:
+          type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    MaintenanceTaskActiveUpdateRequest:
+      type: object
+      required:
+        - is_active
+      properties:
+        is_active:
+          type: boolean
+
+    MaintenanceTaskCreateRequest:
+      type: object
+      required:
+        - title
+        - description
+        - frequency
+        - due_offset_hours
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        frequency:
+          type: string
+          enum:
+            - per_stay
+            - daily
+            - weekly
+            - monthly
+            - custom
+        due_offset_hours:
+          type: integer
+        is_active:
+          type: boolean
+
+    MaintenanceTaskUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        frequency:
+          type: string
+          enum:
+            - per_stay
+            - daily
+            - weekly
+            - monthly
+            - custom
+        due_offset_hours:
+          type: integer
 
     TaskUpdateRequest:
       type: object
