@@ -35,3 +35,19 @@ export type Reservation = {
   note?: string;
   created_by_user_id?: string;
 };
+
+export type TaskInstance = {
+  id?: string;
+  maintenance_task_id?: string;
+  target_date?: string;
+  reservation_id?: string;
+  status?: string;
+  assigned_to_user_id?: string;
+  completed_at?: string;
+  memo?: string;
+};
+
+export type TaskUpdateRequest = {
+  status: 'done' | 'skipped';
+  memo?: string;
+};
