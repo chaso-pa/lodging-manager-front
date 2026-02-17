@@ -7,15 +7,16 @@ export type User = {
 };
 
 export type PublicInfo = {
-  name?: string;
-  description?: string;
-  location?: string;
-  access?: string;
-  house_rules?: string[];
-  amenities?: string[];
-  checkin_time?: string;
-  checkout_time?: string;
-  notes?: string;
+  name: string;
+  headline: string;
+  subheadline: string;
+  location: string;
+  highlights: string[];
+  experiences: Array<{ title: string; description: string; icon: 'telescope' | 'pizza' | 'gift' }>;
+  amenities: string[];
+  houseRules: string[];
+  checkin: string;
+  checkout: string;
 };
 
 export type AvailabilityResponse = {
