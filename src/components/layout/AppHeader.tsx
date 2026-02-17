@@ -3,6 +3,7 @@
 import { ActionIcon, Anchor, Group, useMantineColorScheme } from '@mantine/core';
 import { IconMoon, IconSun } from '@tabler/icons-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +14,7 @@ type Role = 'friend' | 'host' | string;
 export const AppHeader = () => {
   const { user, loading } = useAuth();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const pathname = usePathname();
   const [role, setRole] = useState<Role | null>(null);
 
   useEffect(() => {
@@ -38,6 +40,10 @@ export const AppHeader = () => {
 
     void loadRole();
   }, [loading, user]);
+
+  if (pathname.startsWith('/tasks') || pathname.startsWith('/pre-reservations') || pathname === '/') {
+    return null;
+  }
 
   return (
     <header style={{ borderBottom: '1px solid #e9ecef', padding: '0.75rem 2rem' }}>
