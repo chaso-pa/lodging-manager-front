@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Group, Modal, Stack, Text, Textarea } from '@mantine/core';
+import { Button, Card, Group, Modal, Stack, Textarea } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import dayjs from 'dayjs';
@@ -12,6 +12,10 @@ import { useTaskInstances } from '@/features/task-instances/hooks/useTaskInstanc
 import { useUpdateTaskInstance } from '@/features/task-instances/hooks/useUpdateTaskInstance';
 import { useAuth } from '@/hooks/useAuth';
 import type { TaskInstance } from '@/lib/api/types';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 const formatDate = (value: Date | string): Date => {
   if (value instanceof Date) {
@@ -124,14 +128,28 @@ export default function TaskInstancesPage() {
     );
   };
 
-  return (
-    <main style={{ padding: '2rem' }}>
-      <Card withBorder radius='md' padding='lg' style={{ maxWidth: 920, margin: '0 auto' }}>
-        <Stack gap='md'>
-          <Text fw={700} size='lg'>
-            Task Instances
-          </Text>
+  if (loading) {
+    return <LoadingState text='Checking login status...' />;
+  }
 
+  if (!user) {
+    return <ErrorState title='ログインが必要です' description='タスク一覧を表示するにはログインしてください。' />;
+  }
+
+  if (isLoading) {
+    return <LoadingState text='Loading tasks...' />;
+  }
+
+  if (error) {
+    const message = error instanceof Error ? error.message : 'Failed to load tasks.';
+    return <ErrorState description={message} />;
+  }
+
+  return (
+    <>
+      <PageHeader title='Task Instances' description='指定日のタスクを確認して完了/スキップできます。' />
+      <Card withBorder>
+        <Stack gap='md'>
           <DateInput
             label='Date'
             value={selectedDate}
@@ -140,13 +158,11 @@ export default function TaskInstancesPage() {
             maxDate={dayjs().add(1, 'year').toDate()}
           />
 
-          {loading && <Text c='dimmed'>Checking login status...</Text>}
-          {!loading && !user && <Text c='red'>Please log in to view tasks.</Text>}
-          {isLoading && <Text c='dimmed'>Loading tasks...</Text>}
+          {data.length === 0 && (
+            <EmptyState title='タスクがありません' description='指定日のタスクは見つかりませんでした。' />
+          )}
 
-          {!isLoading && user && data.length === 0 && <Text c='dimmed'>No tasks for this date.</Text>}
-
-          {!isLoading && data.length > 0 && (
+          {data.length > 0 && (
             <TaskInstancesTable items={data} actingId={actingId} onDone={openDoneModal} onSkip={handleSkip} />
           )}
         </Stack>
@@ -169,6 +185,6 @@ export default function TaskInstancesPage() {
           </Button>
         </Group>
       </Modal>
-    </main>
+    </>
   );
 }

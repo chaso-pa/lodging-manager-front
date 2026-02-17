@@ -1,6 +1,7 @@
 'use client';
 
-import { Badge, Button, Group, Table, Text } from '@mantine/core';
+import { Button, Group, Table, Text } from '@mantine/core';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 
 import type { TaskInstance } from '@/lib/api/types';
 
@@ -9,16 +10,6 @@ type TaskInstancesTableProps = {
   actingId: string | null;
   onDone: (task: TaskInstance) => void;
   onSkip: (task: TaskInstance) => void;
-};
-
-const statusColor = (status?: string) => {
-  if (status === 'done') {
-    return 'teal';
-  }
-  if (status === 'skipped') {
-    return 'gray';
-  }
-  return 'blue';
 };
 
 const truncateMemo = (memo?: string) => {
@@ -49,9 +40,7 @@ export const TaskInstancesTable = ({ items, actingId, onDone, onSkip }: TaskInst
             <Text size='sm'>{getTitle(task)}</Text>
           </Table.Td>
           <Table.Td>
-            <Badge color={statusColor(task.status)} variant='light'>
-              {task.status ?? 'unknown'}
-            </Badge>
+            <StatusBadge kind='task' status={task.status ?? 'unknown'} />
           </Table.Td>
           <Table.Td>
             <Text size='sm' c='dimmed'>

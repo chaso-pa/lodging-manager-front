@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Group, Skeleton, Stack, Text } from '@mantine/core';
+import { Button, Card, Stack } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useRef, useState } from 'react';
 
@@ -9,6 +9,10 @@ import { useTaskTemplates } from '@/features/task-templates/hooks/useTaskTemplat
 import { useToggleTaskTemplateActive } from '@/features/task-templates/hooks/useToggleTaskTemplateActive';
 import { useAuth } from '@/hooks/useAuth';
 import type { TaskTemplate } from '@/lib/api/types';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function TaskTemplatesPage() {
   const { user, loading } = useAuth();
@@ -34,6 +38,23 @@ export default function TaskTemplatesPage() {
     });
   }, [error]);
 
+  if (loading) {
+    return <LoadingState text='Checking login status...' />;
+  }
+
+  if (!user) {
+    return <ErrorState title='ログインが必要です' description='タスクテンプレを表示するにはログインしてください。' />;
+  }
+
+  if (isLoading) {
+    return <LoadingState text='Loading task templates...' />;
+  }
+
+  if (error) {
+    const message = error instanceof Error ? error.message : 'Failed to load task templates.';
+    return <ErrorState description={message} />;
+  }
+
   const handleToggle = (task: TaskTemplate) => {
     if (!task.id) {
       return;
@@ -49,36 +70,25 @@ export default function TaskTemplatesPage() {
   };
 
   return (
-    <main style={{ padding: '2rem' }}>
-      <Card withBorder radius='md' padding='lg' style={{ maxWidth: 960, margin: '0 auto' }}>
+    <>
+      <PageHeader
+        title='Task Templates'
+        description='タスク定義の有効/無効を切り替えられます。'
+        right={
+          <Button component='a' size='sm' href='/tasks/templates/new'>
+            New
+          </Button>
+        }
+      />
+      <Card withBorder>
         <Stack gap='md'>
-          <Group gap={'xs'}>
-            <Text fw={700} size='lg'>
-              Task Templates
-            </Text>
-            <Button component='a' size='sm' href='/tasks/templates/new'>
-              New
-            </Button>
-          </Group>
-
-          {loading && <Text c='dimmed'>Checking login status...</Text>}
-          {!loading && !user && <Text c='red'>Please log in to view task templates.</Text>}
-
-          {isLoading && (
-            <Stack gap='sm'>
-              <Skeleton height={24} />
-              <Skeleton height={24} />
-              <Skeleton height={24} />
-            </Stack>
+          {data.length === 0 && (
+            <EmptyState title='タスクテンプレがありません' description='テンプレを作成してください。' />
           )}
 
-          {!isLoading && user && data.length === 0 && <Text c='dimmed'>No task templates found.</Text>}
-
-          {!isLoading && data.length > 0 && (
-            <TaskTemplatesTable items={data} updatingId={updatingId} onToggle={handleToggle} />
-          )}
+          {data.length > 0 && <TaskTemplatesTable items={data} updatingId={updatingId} onToggle={handleToggle} />}
         </Stack>
       </Card>
-    </main>
+    </>
   );
 }
