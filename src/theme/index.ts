@@ -8,7 +8,7 @@ export const theme = createTheme({
   },
   defaultRadius: 'md',
   shadows: {
-    sm: '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+    sm: '0 1px 2px rgba(0, 0, 0, 0.06)',
     md: '0 2px 6px rgba(0, 0, 0, 0.08)'
   },
   components: {
@@ -29,6 +29,21 @@ export const theme = createTheme({
       defaultProps: {
         radius: 'md',
         variant: 'light'
+      }
+    },
+    Modal: {
+      defaultProps: {
+        radius: 'lg'
+      }
+    },
+    Drawer: {
+      defaultProps: {
+        radius: 'lg'
+      }
+    },
+    Notification: {
+      defaultProps: {
+        radius: 'md'
       }
     },
     TextInput: {

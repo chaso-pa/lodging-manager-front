@@ -1,6 +1,7 @@
 'use client';
 
-import { Anchor, Group } from '@mantine/core';
+import { ActionIcon, Anchor, Group, useMantineColorScheme } from '@mantine/core';
+import { IconMoon, IconSun } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -11,6 +12,7 @@ type Role = 'friend' | 'host' | string;
 
 export const AppHeader = () => {
   const { user, loading } = useAuth();
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const [role, setRole] = useState<Role | null>(null);
 
   useEffect(() => {
@@ -62,6 +64,9 @@ export const AppHeader = () => {
         <Anchor component={Link} href='/login'>
           ログイン
         </Anchor>
+        <ActionIcon variant='light' radius='md' onClick={() => toggleColorScheme()} aria-label='toggle color scheme'>
+          {colorScheme === 'dark' ? <IconSun /> : <IconMoon />}
+        </ActionIcon>
       </Group>
     </header>
   );
