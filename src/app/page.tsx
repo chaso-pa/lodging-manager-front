@@ -1,67 +1,48 @@
-import { Card, Text } from '@mantine/core';
-import { fetchPublicInfo } from '@/lib/api/public';
+'use client';
 
-const renderList = (items?: string[]) => {
-  if (!items || items.length === 0) {
-    return <Text c='dimmed'>Not provided</Text>;
+import { Box, Skeleton, Stack } from '@mantine/core';
+import { CTASection } from '@/features/public-infos/components/CTASection';
+import { ExperiencesSection } from '@/features/public-infos/components/ExperiencesSection';
+import { GallerySection } from '@/features/public-infos/components/GallerySection';
+import { HeroSection } from '@/features/public-infos/components/HeroSection';
+import { PublicFooter } from '@/features/public-infos/components/PublicFooter';
+import { PublicHeader } from '@/features/public-infos/components/PublicHeader';
+import { StayInfoSection } from '@/features/public-infos/components/StayInfoSection';
+import { TrustBar } from '@/features/public-infos/components/TrustBar';
+import { usePublicInfo } from '@/features/public-infos/hooks/usePublicInfo';
+
+export default function PublicLandingPage() {
+  const { data: info, isLoading, error } = usePublicInfo();
+
+  if (isLoading) {
+    return (
+      <Box p='xl'>
+        <Stack gap='md'>
+          <Skeleton height={28} w='40%' />
+          <Skeleton height={18} w='60%' />
+          <Skeleton height={16} />
+          <Skeleton height={200} />
+          <Skeleton height={16} />
+          <Skeleton height={16} />
+        </Stack>
+      </Box>
+    );
   }
 
-  return items.map((item, index) => (
-    <Text key={`${item}-${index}`} size='sm'>
-      • {item}
-    </Text>
-  ));
-};
-
-export default async function HomePage() {
-  const info = await fetchPublicInfo();
+  if (error || !info) {
+    return <Box p='xl'>Failed to load public info.</Box>;
+  }
 
   return (
-    <main style={{ padding: '2rem' }}>
-      <Card withBorder radius='md' padding='lg' style={{ maxWidth: 720, margin: '0 auto' }}>
-        <Text fw={700} size='lg' mb='sm'>
-          {info.name ?? 'Public Listing'}
-        </Text>
-        <Text mb='md' c='dimmed'>
-          {info.description ?? 'No description available.'}
-        </Text>
-
-        <Text fw={600} mb='xs'>
-          Location
-        </Text>
-        <Text size='sm' mb='md'>
-          {info.location ?? 'Not provided'}
-        </Text>
-
-        <Text fw={600} mb='xs'>
-          Access
-        </Text>
-        <Text size='sm' mb='md'>
-          {info.access ?? 'Not provided'}
-        </Text>
-
-        <Text fw={600} mb='xs'>
-          House Rules
-        </Text>
-        <div style={{ marginBottom: '1rem' }}>{renderList(info.house_rules)}</div>
-
-        <Text fw={600} mb='xs'>
-          Amenities
-        </Text>
-        <div style={{ marginBottom: '1rem' }}>{renderList(info.amenities)}</div>
-
-        <Text fw={600} mb='xs'>
-          Check-in / Check-out
-        </Text>
-        <Text size='sm' mb='md'>
-          {info.checkin_time ?? 'Not provided'} / {info.checkout_time ?? 'Not provided'}
-        </Text>
-
-        <Text fw={600} mb='xs'>
-          Notes
-        </Text>
-        <Text size='sm'>{info.notes ?? 'Not provided'}</Text>
-      </Card>
-    </main>
+    <Box>
+      <PublicHeader name={info.name} />
+      <HeroSection info={info} />
+      <TrustBar info={info} />
+      <ExperiencesSection info={info} />
+      <StayInfoSection info={info} />
+      <GallerySection />
+      <CTASection />
+      <PublicFooter />
+    </Box>
   );
 }
