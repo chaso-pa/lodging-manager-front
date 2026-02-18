@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Group, Modal, Stack, Textarea } from '@mantine/core';
+import { Button, Card, Group, Modal, Textarea } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import dayjs from 'dayjs';
@@ -12,10 +12,11 @@ import { useTaskInstances } from '@/features/task-instances/hooks/useTaskInstanc
 import { useUpdateTaskInstance } from '@/features/task-instances/hooks/useUpdateTaskInstance';
 import { useAuth } from '@/hooks/useAuth';
 import type { TaskInstance } from '@/lib/api/types';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { FilterBar } from '@/components/ui/table/FilterBar';
+import { TableShell } from '@/components/ui/table/TableShell';
+import { TableState } from '@/components/ui/table/TableState';
 
 const formatDate = (value: Date | string): Date => {
   if (value instanceof Date) {
@@ -55,7 +56,7 @@ export default function TaskInstancesPage() {
   }, [initialDate]);
 
   const dateString = useMemo(() => dayjs(selectedDate ?? new Date()).format('YYYY-MM-DD'), [selectedDate]);
-  const { data = [], isLoading, error } = useTaskInstances(dateString);
+  const { data = [], isLoading, error, refetch } = useTaskInstances(dateString);
   const updateTaskInstance = useUpdateTaskInstance();
 
   useEffect(() => {
@@ -136,36 +137,35 @@ export default function TaskInstancesPage() {
     return <ErrorState title='ログインが必要です' description='タスク一覧を表示するにはログインしてください。' />;
   }
 
-  if (isLoading) {
-    return <LoadingState text='Loading tasks...' />;
-  }
-
-  if (error) {
-    const message = error instanceof Error ? error.message : 'Failed to load tasks.';
-    return <ErrorState description={message} />;
-  }
-
   return (
-    <>
-      <PageHeader title='Task Instances' description='指定日のタスクを確認して完了/スキップできます。' />
+    <TableShell
+      title='Task Instances'
+      description='指定日のタスクを確認して完了/スキップできます。'
+      filters={
+        <FilterBar
+          left={
+            <DateInput
+              label='Date'
+              value={selectedDate}
+              onChange={handleDateChange}
+              valueFormat='YYYY-MM-DD'
+              maxDate={dayjs().add(1, 'year').toDate()}
+            />
+          }
+        />
+      }
+    >
       <Card withBorder>
-        <Stack gap='md'>
-          <DateInput
-            label='Date'
-            value={selectedDate}
-            onChange={handleDateChange}
-            valueFormat='YYYY-MM-DD'
-            maxDate={dayjs().add(1, 'year').toDate()}
-          />
-
-          {data.length === 0 && (
-            <EmptyState title='タスクがありません' description='指定日のタスクは見つかりませんでした。' />
-          )}
-
-          {data.length > 0 && (
-            <TaskInstancesTable items={data} actingId={actingId} onDone={openDoneModal} onSkip={handleSkip} />
-          )}
-        </Stack>
+        <TableState
+          isLoading={isLoading}
+          error={error}
+          isEmpty={data.length === 0}
+          emptyTitle='タスクがありません'
+          emptyDescription='指定日のタスクは見つかりませんでした。'
+          onRetry={() => void refetch()}
+        >
+          <TaskInstancesTable items={data} actingId={actingId} onDone={openDoneModal} onSkip={handleSkip} />
+        </TableState>
       </Card>
 
       <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title='完了メモ'>
@@ -185,6 +185,6 @@ export default function TaskInstancesPage() {
           </Button>
         </Group>
       </Modal>
-    </>
+    </TableShell>
   );
 }

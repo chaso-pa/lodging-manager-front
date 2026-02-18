@@ -1,22 +1,22 @@
 'use client';
 
-import { Button, Card, Stack } from '@mantine/core';
+import { Button, Card } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useRef, useState } from 'react';
 
+import { TableShell } from '@/components/ui/table/TableShell';
+import { TableState } from '@/components/ui/table/TableState';
 import { TaskTemplatesTable } from '@/features/task-templates/components/TaskTemplatesTable';
 import { useTaskTemplates } from '@/features/task-templates/hooks/useTaskTemplates';
 import { useToggleTaskTemplateActive } from '@/features/task-templates/hooks/useToggleTaskTemplateActive';
 import { useAuth } from '@/hooks/useAuth';
 import type { TaskTemplate } from '@/lib/api/types';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function TaskTemplatesPage() {
   const { user, loading } = useAuth();
-  const { data = [], isLoading, error } = useTaskTemplates();
+  const { data = [], isLoading, error, refetch } = useTaskTemplates();
   const toggleActive = useToggleTaskTemplateActive();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const lastErrorRef = useRef<string | null>(null);
@@ -46,15 +46,6 @@ export default function TaskTemplatesPage() {
     return <ErrorState title='ログインが必要です' description='タスクテンプレを表示するにはログインしてください。' />;
   }
 
-  if (isLoading) {
-    return <LoadingState text='Loading task templates...' />;
-  }
-
-  if (error) {
-    const message = error instanceof Error ? error.message : 'Failed to load task templates.';
-    return <ErrorState description={message} />;
-  }
-
   const handleToggle = (task: TaskTemplate) => {
     if (!task.id) {
       return;
@@ -70,25 +61,27 @@ export default function TaskTemplatesPage() {
   };
 
   return (
-    <>
-      <PageHeader
-        title='Task Templates'
-        description='タスク定義の有効/無効を切り替えられます。'
-        right={
-          <Button component='a' size='sm' href='/tasks/templates/new'>
-            New
-          </Button>
-        }
-      />
+    <TableShell
+      title='Task Templates'
+      description='タスク定義の有効/無効を切り替えられます。'
+      right={
+        <Button component='a' size='sm' href='/tasks/templates/new'>
+          New
+        </Button>
+      }
+    >
       <Card withBorder>
-        <Stack gap='md'>
-          {data.length === 0 && (
-            <EmptyState title='タスクテンプレがありません' description='テンプレを作成してください。' />
-          )}
-
-          {data.length > 0 && <TaskTemplatesTable items={data} updatingId={updatingId} onToggle={handleToggle} />}
-        </Stack>
+        <TableState
+          isLoading={isLoading}
+          error={error}
+          isEmpty={data.length === 0}
+          emptyTitle='タスクテンプレがありません'
+          emptyDescription='テンプレを作成してください。'
+          onRetry={() => void refetch()}
+        >
+          <TaskTemplatesTable items={data} updatingId={updatingId} onToggle={handleToggle} />
+        </TableState>
       </Card>
-    </>
+    </TableShell>
   );
 }
