@@ -1,8 +1,12 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Center, Paper, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Button, Center, PasswordInput, Stack, Text, TextInput } from '@mantine/core';
 import { useState } from 'react';
+import { FormShell } from '@/components/ui/form/FormShell';
+import { FormField } from '@/components/ui/form/FormField';
+import { SubmitBar } from '@/components/ui/form/SubmitBar';
+import { FormErrorAlert } from '@/components/ui/form/FormErrorAlert';
 
 const LoginPage = () => {
   const { login, loginWithGoogle, loading, user, logout } = useAuth();
@@ -61,11 +65,11 @@ const LoginPage = () => {
 
   return (
     <Center h='100vh' px='md'>
-      <Paper w='100%' maw={420} p='xl' withBorder>
+      <FormShell title='Login' description='メールアドレスとパスワードでログインします。'>
         <Stack gap='md'>
-          <Title order={2}>Login</Title>
           {user ? (
             <>
+              <FormErrorAlert message={error ?? undefined} />
               <Text size='sm'>Already signed in as {user.email ?? 'unknown user'}.</Text>
               <Button onClick={handleLogout} loading={submitting} disabled={loading}>
                 Logout
@@ -74,29 +78,25 @@ const LoginPage = () => {
           ) : (
             <form onSubmit={handleSubmit}>
               <Stack gap='sm'>
-                <TextInput
-                  label='Email'
-                  type='email'
-                  value={email}
-                  onChange={(event) => setEmail(event.currentTarget.value)}
-                  required
-                  disabled={loading || submitting}
-                />
-                <PasswordInput
-                  label='Password'
-                  value={password}
-                  onChange={(event) => setPassword(event.currentTarget.value)}
-                  required
-                  disabled={loading || submitting}
-                />
-                {error ? (
-                  <Text size='sm' c='red'>
-                    {error}
-                  </Text>
-                ) : null}
-                <Button type='submit' loading={submitting} disabled={loading}>
-                  Login
-                </Button>
+                <FormErrorAlert message={error ?? undefined} />
+                <FormField label='Email' required>
+                  <TextInput
+                    type='email'
+                    value={email}
+                    onChange={(event) => setEmail(event.currentTarget.value)}
+                    required
+                    disabled={loading || submitting}
+                  />
+                </FormField>
+                <FormField label='Password' required>
+                  <PasswordInput
+                    value={password}
+                    onChange={(event) => setPassword(event.currentTarget.value)}
+                    required
+                    disabled={loading || submitting}
+                  />
+                </FormField>
+                <SubmitBar submitLabel='Login' isSubmitting={submitting} disabled={loading} />
                 <Button
                   type='button'
                   variant='light'
@@ -110,7 +110,7 @@ const LoginPage = () => {
             </form>
           )}
         </Stack>
-      </Paper>
+      </FormShell>
     </Center>
   );
 };

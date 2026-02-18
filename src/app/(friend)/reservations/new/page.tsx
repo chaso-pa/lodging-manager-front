@@ -1,11 +1,15 @@
 'use client';
 
-import { Button, Card, NumberInput, Text, Textarea } from '@mantine/core';
+import { NumberInput, Stack, Text, Textarea } from '@mantine/core';
 import { DatePickerInput, type DatesRangeValue } from '@mantine/dates';
 import { useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { createFriendPreReservation } from '@/lib/api/preReservations';
+import { FormShell } from '@/components/ui/form/FormShell';
+import { FormField } from '@/components/ui/form/FormField';
+import { SubmitBar } from '@/components/ui/form/SubmitBar';
+import { FormErrorAlert } from '@/components/ui/form/FormErrorAlert';
 
 const formatDateTime = (value: Date | string) => {
   if (value instanceof Date) {
@@ -35,7 +39,8 @@ export default function FriendPreReservationPage() {
     return !!range[0] && !!range[1] && typeof guestsCount === 'number' && guestsCount > 0 && !!user && !loading;
   }, [guestsCount, loading, range, user]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (!user || loading) {
       setError('Please log in to create a pre-reservation.');
       return;
@@ -70,59 +75,52 @@ export default function FriendPreReservationPage() {
   };
 
   return (
-    <main style={{ padding: '2rem' }}>
-      <Card withBorder radius='md' padding='lg' style={{ maxWidth: 640, margin: '0 auto' }}>
-        <Text fw={700} size='lg' mb='sm'>
-          Create Pre-Reservation
-        </Text>
+    <FormShell title='Create Pre-Reservation' description='宿泊日と人数を入力してください。'>
+      <form onSubmit={handleSubmit}>
+        <Stack gap='md'>
+          <FormErrorAlert message={error ?? undefined} />
 
-        <DatePickerInput
-          type='range'
-          label='Stay dates'
-          placeholder='Pick check-in and check-out dates'
-          value={range}
-          onChange={setRange}
-          clearable
-          mb='md'
-        />
+          <FormField label='Stay dates' required>
+            <DatePickerInput
+              type='range'
+              placeholder='Pick check-in and check-out dates'
+              value={range}
+              onChange={setRange}
+              clearable
+            />
+          </FormField>
 
-        <NumberInput
-          label='Guests count'
-          placeholder='Number of guests'
-          min={1}
-          value={guestsCount}
-          onChange={setGuestsCount}
-          mb='md'
-        />
+          <FormField label='Guests count' required>
+            <NumberInput
+              placeholder='Number of guests'
+              min={1}
+              value={guestsCount}
+              onChange={setGuestsCount}
+              required
+            />
+          </FormField>
 
-        <Textarea
-          label='Memo'
-          placeholder='Optional note'
-          minRows={3}
-          value={note}
-          onChange={(event) => setNote(event.currentTarget.value)}
-          mb='md'
-        />
+          <FormField label='Memo'>
+            <Textarea
+              placeholder='Optional note'
+              minRows={3}
+              value={note}
+              onChange={(event) => setNote(event.currentTarget.value)}
+            />
+          </FormField>
 
-        {loading && <Text c='dimmed'>Checking login status...</Text>}
-        {!loading && !user && <Text c='red'>Please log in to create a pre-reservation.</Text>}
+          {loading && <Text c='dimmed'>Checking login status...</Text>}
+          {!loading && !user && <Text c='red'>Please log in to create a pre-reservation.</Text>}
 
-        {error && (
-          <Text c='red' size='sm' mb='sm'>
-            {error}
-          </Text>
-        )}
+          {success && (
+            <Text c='teal' fw={600}>
+              承認待ち
+            </Text>
+          )}
 
-        {success && (
-          <Text c='teal' fw={600} mb='sm'>
-            承認待ち
-          </Text>
-        )}
-
-        <Button onClick={handleSubmit} disabled={!canSubmit || submitting} loading={submitting}>
-          Submit
-        </Button>
-      </Card>
-    </main>
+          <SubmitBar submitLabel='Submit' isSubmitting={submitting} disabled={!canSubmit} />
+        </Stack>
+      </form>
+    </FormShell>
   );
 }

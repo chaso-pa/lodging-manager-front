@@ -1,11 +1,17 @@
 'use client';
 
-import { Button, Card, Group, NumberInput, Select, Stack, Switch, Text, Textarea, TextInput } from '@mantine/core';
+import { NumberInput, Select, Stack, Switch, Textarea, TextInput } from '@mantine/core';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { useCreateTaskTemplate } from '@/features/task-templates/hooks/useCreateTaskTemplate';
 import { useAuth } from '@/hooks/useAuth';
+import { FormShell } from '@/components/ui/form/FormShell';
+import { FormField } from '@/components/ui/form/FormField';
+import { SubmitBar } from '@/components/ui/form/SubmitBar';
+import { FormErrorAlert } from '@/components/ui/form/FormErrorAlert';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { ErrorState } from '@/components/ui/ErrorState';
 
 const frequencyOptions = [
   { value: 'per_stay', label: 'Per stay' },
@@ -36,7 +42,8 @@ export default function TaskTemplateCreatePage() {
     typeof dueOffsetHours === 'number' &&
     dueOffsetHours >= 0;
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (!canSubmit || !frequency || typeof dueOffsetHours !== 'number') {
       setError('必須項目を入力してください。');
       return;
@@ -58,44 +65,48 @@ export default function TaskTemplateCreatePage() {
     );
   };
 
+  if (loading) {
+    return <LoadingState text='Checking login status...' />;
+  }
+
+  if (!user) {
+    return <ErrorState title='ログインが必要です' description='タスクテンプレを作成するにはログインしてください。' />;
+  }
+
   return (
-    <main style={{ padding: '2rem' }}>
-      <Card withBorder radius='md' padding='lg' style={{ maxWidth: 720, margin: '0 auto' }}>
+    <FormShell title='Create Task Template' description='タスク定義の基本情報を入力してください。'>
+      <form onSubmit={handleSubmit}>
         <Stack gap='md'>
-          <Text fw={700} size='lg'>
-            Create Task Template
-          </Text>
-
-          {loading && <Text c='dimmed'>Checking login status...</Text>}
-          {!loading && !user && <Text c='red'>Please log in to create task templates.</Text>}
-
-          <TextInput label='Title' value={title} onChange={(event) => setTitle(event.currentTarget.value)} />
-          <Textarea
-            label='Description'
-            minRows={3}
-            value={description}
-            onChange={(event) => setDescription(event.currentTarget.value)}
+          <FormErrorAlert message={error ?? undefined} />
+          <FormField label='Title' required>
+            <TextInput value={title} onChange={(event) => setTitle(event.currentTarget.value)} required />
+          </FormField>
+          <FormField label='Description' required>
+            <Textarea
+              minRows={3}
+              value={description}
+              onChange={(event) => setDescription(event.currentTarget.value)}
+              required
+            />
+          </FormField>
+          <FormField label='Frequency' required>
+            <Select data={frequencyOptions} value={frequency} onChange={setFrequency} required />
+          </FormField>
+          <FormField label='Due offset (hours)' required>
+            <NumberInput min={0} value={dueOffsetHours} onChange={setDueOffsetHours} required />
+          </FormField>
+          <FormField label='Active'>
+            <Switch checked={isActive} onChange={(event) => setIsActive(event.currentTarget.checked)} />
+          </FormField>
+          <SubmitBar
+            submitLabel='Create'
+            cancelLabel='Cancel'
+            onCancel={() => router.push('/tasks/templates')}
+            isSubmitting={createTaskTemplate.isPending}
+            disabled={!canSubmit}
           />
-          <Select label='Frequency' data={frequencyOptions} value={frequency} onChange={setFrequency} />
-          <NumberInput label='Due offset (hours)' min={0} value={dueOffsetHours} onChange={setDueOffsetHours} />
-          <Switch label='Active' checked={isActive} onChange={(event) => setIsActive(event.currentTarget.checked)} />
-
-          {error && (
-            <Text c='red' size='sm'>
-              {error}
-            </Text>
-          )}
-
-          <Group justify='flex-end'>
-            <Button variant='default' onClick={() => router.push('/tasks/templates')}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit} disabled={!canSubmit} loading={createTaskTemplate.isPending}>
-              Create
-            </Button>
-          </Group>
         </Stack>
-      </Card>
-    </main>
+      </form>
+    </FormShell>
   );
 }

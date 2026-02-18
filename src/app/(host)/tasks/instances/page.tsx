@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Group, Modal, Textarea } from '@mantine/core';
+import { Card, Modal, Stack, Textarea } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import dayjs from 'dayjs';
@@ -17,6 +17,8 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { FilterBar } from '@/components/ui/table/FilterBar';
 import { TableShell } from '@/components/ui/table/TableShell';
 import { TableState } from '@/components/ui/table/TableState';
+import { FormField } from '@/components/ui/form/FormField';
+import { SubmitBar } from '@/components/ui/form/SubmitBar';
 
 const formatDate = (value: Date | string): Date => {
   if (value instanceof Date) {
@@ -169,21 +171,29 @@ export default function TaskInstancesPage() {
       </Card>
 
       <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title='完了メモ'>
-        <Textarea
-          label='Memo'
-          placeholder='Optional memo'
-          minRows={3}
-          value={memo}
-          onChange={(event) => setMemo(event.currentTarget.value)}
-        />
-        <Group mt='md' justify='flex-end'>
-          <Button variant='default' onClick={() => setModalOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleDone} loading={actingId === activeTask?.id}>
-            Done
-          </Button>
-        </Group>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleDone();
+          }}
+        >
+          <Stack gap='md'>
+            <FormField label='Memo'>
+              <Textarea
+                placeholder='Optional memo'
+                minRows={3}
+                value={memo}
+                onChange={(event) => setMemo(event.currentTarget.value)}
+              />
+            </FormField>
+            <SubmitBar
+              submitLabel='Done'
+              cancelLabel='Cancel'
+              onCancel={() => setModalOpen(false)}
+              isSubmitting={actingId === activeTask?.id}
+            />
+          </Stack>
+        </form>
       </Modal>
     </TableShell>
   );
