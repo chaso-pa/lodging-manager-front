@@ -3,6 +3,7 @@
 import type { Metadata } from 'next';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
+import '@mantine/notifications/styles.css';
 
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import { AuthBootstrapper } from '@/features/auth/AuthBootstrapper';
