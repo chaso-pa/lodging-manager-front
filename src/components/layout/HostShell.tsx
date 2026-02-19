@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   ActionIcon,
-  Anchor,
   AppShell,
   Box,
   Button,
@@ -19,8 +18,10 @@ import {
 import { IconMoon, IconSun } from '@tabler/icons-react';
 
 import { hostNavItems } from '@/components/layout/hostNav';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchMe } from '@/lib/api/auth';
+import { Notifications } from '@mantine/notifications';
 
 type HostShellProps = {
   children: React.ReactNode;
@@ -67,13 +68,18 @@ export const HostShell = ({ children }: HostShellProps) => {
     );
   }
 
+  if (!user) {
+    return (
+      <Box p='xl'>
+        <ErrorState title='ログインが必要です' description='ログインして再度お試しください。' backHref='/login' />
+      </Box>
+    );
+  }
+
   if (role !== 'host') {
     return (
       <Box p='xl'>
-        <Text fw={600} size='lg'>
-          403
-        </Text>
-        <Text c='dimmed'>アクセス権限がありません。</Text>
+        <ErrorState title='403' description='アクセス権限がありません。' backHref='/' />
       </Box>
     );
   }

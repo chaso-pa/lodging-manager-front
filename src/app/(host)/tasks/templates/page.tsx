@@ -1,7 +1,8 @@
 'use client';
 
 import { Button, Card } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+import { normalizeError } from '@/lib/api/normalizeError';
+import { notifyError } from '@/lib/feedback/notify';
 import { useEffect, useRef, useState } from 'react';
 
 import { TableShell } from '@/components/ui/table/TableShell';
@@ -26,16 +27,13 @@ export default function TaskTemplatesPage() {
       lastErrorRef.current = null;
       return;
     }
-    const message = error instanceof Error ? error.message : 'Failed to load task templates.';
+    const normalized = normalizeError(error);
+    const message = normalized.message;
     if (lastErrorRef.current === message) {
       return;
     }
     lastErrorRef.current = message;
-    notifications.show({
-      color: 'red',
-      title: '取得に失敗しました',
-      message
-    });
+    notifyError('取得に失敗しました', message);
   }, [error]);
 
   if (loading) {

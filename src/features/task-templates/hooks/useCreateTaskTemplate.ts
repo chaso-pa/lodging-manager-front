@@ -1,10 +1,11 @@
 'use client';
 
-import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { createTaskTemplate, type TaskTemplateCreateRequest } from '@/features/task-templates/api/createTaskTemplate';
 import { useAuth } from '@/hooks/useAuth';
+import { notifyError, notifySuccess } from '@/lib/feedback/notify';
+import { normalizeError } from '@/lib/api/normalizeError';
 
 export const useCreateTaskTemplate = () => {
   const { user } = useAuth();
@@ -20,18 +21,11 @@ export const useCreateTaskTemplate = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task-templates'] });
-      notifications.show({
-        color: 'teal',
-        title: '作成しました',
-        message: 'タスクテンプレを作成しました。'
-      });
+      notifySuccess('作成しました', 'タスクテンプレを作成しました。');
     },
-    onError: () => {
-      notifications.show({
-        color: 'red',
-        title: '作成に失敗しました',
-        message: '入力内容をご確認ください。'
-      });
+    onError: (error) => {
+      const normalized = normalizeError(error);
+      notifyError('作成に失敗しました', normalized.message);
     }
   });
 };

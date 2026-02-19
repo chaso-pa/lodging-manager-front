@@ -17,7 +17,7 @@ export const Providers = ({ children }: ProvidersProps) => {
   return (
     <QueryClientProvider client={queryClient}>
       <MantineProvider theme={theme} colorSchemeManager={colorSchemeManager} defaultColorScheme='light'>
-        <Notifications />
+        <Notifications position='top-right' limit={5} zIndex={1000} />
         {children}
       </MantineProvider>
     </QueryClientProvider>

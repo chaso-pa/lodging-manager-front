@@ -1,11 +1,12 @@
 'use client';
 
-import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { updateTaskTemplateActive } from '@/features/task-templates/api/updateTaskTemplateActive';
 import { useAuth } from '@/hooks/useAuth';
 import type { TaskTemplate } from '@/lib/api/types';
+import { notifyError, notifySuccess } from '@/lib/feedback/notify';
+import { normalizeError } from '@/lib/api/normalizeError';
 
 type TogglePayload = {
   id: string;
@@ -46,18 +47,11 @@ export const useToggleTaskTemplateActive = () => {
           queryClient.setQueryData(key, items);
         });
       }
-      notifications.show({
-        color: 'red',
-        title: '更新に失敗しました',
-        message: 'もう一度お試しください。'
-      });
+      const normalized = normalizeError(_error);
+      notifyError('更新に失敗しました', normalized.message);
     },
     onSuccess: () => {
-      notifications.show({
-        color: 'teal',
-        title: '更新しました',
-        message: 'アクティブ状態を更新しました。'
-      });
+      notifySuccess('更新しました', 'アクティブ状態を更新しました。');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['task-templates'] });

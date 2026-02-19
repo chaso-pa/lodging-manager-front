@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchAdminPreReservations, updateAdminPreReservation } from '@/lib/api/adminPreReservations';
 import type { Reservation } from '@/lib/api/types';
+import { notifyError, notifySuccess } from '@/lib/feedback/notify';
+import { normalizeError } from '@/lib/api/normalizeError';
 
 const formatDateRange = (reservation: Reservation) => {
   const checkin = reservation.checkin_at ?? 'N/A';
@@ -55,8 +57,11 @@ export default function HostPreReservationsPage() {
       const token = await user.getIdToken();
       await updateAdminPreReservation(id, action, token);
       setItems((prev) => prev.filter((item) => item.id !== id));
+      notifySuccess('更新しました', action === 'approve' ? '承認しました。' : '却下しました。');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update pre-reservation.');
+      const normalized = normalizeError(err);
+      setError(normalized.message);
+      notifyError('更新に失敗しました', normalized.message);
     } finally {
       setActingId(null);
     }

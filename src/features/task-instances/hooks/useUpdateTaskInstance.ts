@@ -1,11 +1,12 @@
 'use client';
 
-import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { updateTaskInstance } from '@/features/task-instances/api/updateTaskInstance';
 import { useAuth } from '@/hooks/useAuth';
 import type { TaskInstance, TaskUpdateRequest } from '@/lib/api/types';
+import { notifyError, notifySuccess } from '@/lib/feedback/notify';
+import { normalizeError } from '@/lib/api/normalizeError';
 
 type UpdatePayload = {
   id: string;
@@ -54,11 +55,12 @@ export const useUpdateTaskInstance = () => {
           queryClient.setQueryData(key, items);
         });
       }
-      notifications.show({
-        color: 'red',
-        title: '更新に失敗しました',
-        message: 'もう一度お試しください。'
-      });
+      const normalized = normalizeError(_error);
+      notifyError('更新に失敗しました', normalized.message);
+    },
+    onSuccess: (_data, variables) => {
+      const statusLabel = variables.payload.status === 'done' ? '完了' : 'スキップ';
+      notifySuccess('更新しました', `ステータスを${statusLabel}に更新しました。`);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['task-instances'] });

@@ -45,7 +45,7 @@ export const TaskTemplatesTable = ({ items, updatingId, onToggle }: TaskTemplate
               <Switch
                 checked={!!task.is_active}
                 onChange={() => onToggle(task)}
-                disabled={!task.id}
+                disabled={!task.id || updatingId === task.id}
                 aria-label={`toggle-${task.id ?? task.title ?? 'task'}`}
               />
             </Table.Td>

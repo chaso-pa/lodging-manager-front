@@ -2,7 +2,8 @@
 
 import { Card, Modal, Stack, Textarea } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { notifications } from '@mantine/notifications';
+import { normalizeError } from '@/lib/api/normalizeError';
+import { notifyError } from '@/lib/feedback/notify';
 import dayjs from 'dayjs';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -67,16 +68,13 @@ export default function TaskInstancesPage() {
       return;
     }
 
-    const message = error instanceof Error ? error.message : 'Failed to load tasks.';
+    const normalized = normalizeError(error);
+    const message = normalized.message;
     if (lastErrorRef.current === message) {
       return;
     }
     lastErrorRef.current = message;
-    notifications.show({
-      color: 'red',
-      title: '取得に失敗しました',
-      message
-    });
+    notifyError('取得に失敗しました', message);
   }, [error]);
 
   const handleDateChange = (value: string | null) => {

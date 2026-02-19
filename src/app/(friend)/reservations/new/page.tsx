@@ -10,6 +10,8 @@ import { FormShell } from '@/components/ui/form/FormShell';
 import { FormField } from '@/components/ui/form/FormField';
 import { SubmitBar } from '@/components/ui/form/SubmitBar';
 import { FormErrorAlert } from '@/components/ui/form/FormErrorAlert';
+import { notifyError, notifySuccess } from '@/lib/feedback/notify';
+import { normalizeError } from '@/lib/api/normalizeError';
 
 const formatDateTime = (value: Date | string) => {
   if (value instanceof Date) {
@@ -67,8 +69,11 @@ export default function FriendPreReservationPage() {
         token
       );
       setSuccess(true);
+      notifySuccess('申請しました', '承認待ちです。');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create pre-reservation.');
+      const normalized = normalizeError(err);
+      setError(normalized.message);
+      notifyError('作成に失敗しました', normalized.message);
     } finally {
       setSubmitting(false);
     }
