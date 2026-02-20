@@ -14,7 +14,7 @@ export function HeroSection({ info }: { info: PublicInfo }) {
             {info.subheadline}
           </Text>
 
-          <Group gap='sm' mt='sm'>
+          <Group gap='sm' mt='sm' visibleFrom='md'>
             <Button size='md' component='a' href='#availability'>
               空き確認
             </Button>
@@ -22,6 +22,14 @@ export function HeroSection({ info }: { info: PublicInfo }) {
               詳細を見る
             </Button>
           </Group>
+          <Stack gap='sm' mt='sm' hiddenFrom='md'>
+            <Button size='md' component='a' href='#availability' fullWidth>
+              空き確認
+            </Button>
+            <Button size='md' variant='light' component='a' href='#stay' fullWidth>
+              詳細を見る
+            </Button>
+          </Stack>
 
           <Group gap='xs' mt='md'>
             {info.highlights.map((h) => (

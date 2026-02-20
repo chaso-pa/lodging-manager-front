@@ -6,5 +6,9 @@ type RowActionsProps = {
 };
 
 export const RowActions = ({ children }: RowActionsProps) => {
-  return <Group gap='xs'>{children}</Group>;
+  return (
+    <Group gap='sm' wrap='wrap'>
+      {children}
+    </Group>
+  );
 };

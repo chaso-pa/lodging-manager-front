@@ -7,6 +7,7 @@ import {
   ActionIcon,
   AppShell,
   Box,
+  Burger,
   Button,
   Container,
   Group,
@@ -16,6 +17,7 @@ import {
   useMantineColorScheme
 } from '@mantine/core';
 import { IconMoon, IconSun } from '@tabler/icons-react';
+import { useDisclosure } from '@mantine/hooks';
 
 import { hostNavItems } from '@/components/layout/hostNav';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -31,6 +33,7 @@ export const HostShell = ({ children }: HostShellProps) => {
   const pathname = usePathname();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const { user, loading, logout } = useAuth();
+  const [opened, { toggle: toggleNavbar }] = useDisclosure(false);
   const [role, setRole] = useState<string | null>(null);
   const [checkingRole, setCheckingRole] = useState(true);
 
@@ -85,12 +88,19 @@ export const HostShell = ({ children }: HostShellProps) => {
   }
 
   return (
-    <AppShell navbar={{ width: 240, breakpoint: 'sm' }} header={{ height: 60 }} padding='md'>
+    <AppShell
+      navbar={{ width: 240, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+      header={{ height: 60 }}
+      padding='md'
+    >
       <AppShell.Header>
         <Group h='100%' px='md' justify='space-between'>
-          <Text component='a' href='/' fw={700}>
-            Lodging Manager
-          </Text>
+          <Group gap='sm'>
+            <Burger opened={opened} onClick={toggleNavbar} hiddenFrom='sm' aria-label='Toggle navigation' />
+            <Text component='a' href='/' fw={700}>
+              Lodging Manager
+            </Text>
+          </Group>
           <Group gap='sm'>
             <ActionIcon
               variant='light'

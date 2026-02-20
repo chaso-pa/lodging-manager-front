@@ -92,6 +92,7 @@ export default function FriendPreReservationPage() {
               value={range}
               onChange={setRange}
               clearable
+              required
             />
           </FormField>
 

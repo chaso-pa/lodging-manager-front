@@ -150,6 +150,7 @@ export default function TaskInstancesPage() {
               onChange={handleDateChange}
               valueFormat='YYYY-MM-DD'
               maxDate={dayjs().add(1, 'year').toDate()}
+              w='100%'
             />
           }
         />

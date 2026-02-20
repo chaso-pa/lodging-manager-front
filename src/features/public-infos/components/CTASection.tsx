@@ -10,7 +10,7 @@ export function CTASection() {
             <Text c='dimmed'>まずは空いている日をチェック。友人の方は準予約も可能です。</Text>
           </Stack>
 
-          <Group justify='flex-end' align='center'>
+          <Group justify='flex-end' align='center' visibleFrom='md'>
             <Button size='md' variant='light' component='a' href='/availability'>
               空き確認へ
             </Button>
@@ -18,6 +18,14 @@ export function CTASection() {
               ログインして準予約
             </Button>
           </Group>
+          <Stack gap='sm' hiddenFrom='md'>
+            <Button size='md' variant='light' component='a' href='/availability' fullWidth>
+              空き確認へ
+            </Button>
+            <Button size='md' component='a' href='/login' fullWidth>
+              ログインして準予約
+            </Button>
+          </Stack>
         </SimpleGrid>
       </Card>
     </Container>
